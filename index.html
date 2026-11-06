@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#171c25">
-<title>Crown & Conquest</title>
+<title>Crown &amp; Conquest · v0.2</title>
 <style>
 :root{--bg:#171c25;--panel:#222a36;--panel2:#2b3543;--gold:#e7bd68;--cream:#f3e8cb;--muted:#9eacba;--red:#e36e68;--green:#83bd83;--blue:#7eb7d6}
 *{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at top,#293545 0,#171c25 65%);color:var(--cream);font-family:Georgia,"Times New Roman",serif;min-height:100vh}
@@ -29,7 +29,7 @@ button{font:inherit;cursor:pointer;border:0;color:inherit}
 .card:hover{transform:translateY(-2px);border-color:var(--gold)}.card.chosen{outline:3px solid var(--gold);background:linear-gradient(145deg,#66583c,#3b3b36)}.card .icon{font-size:29px}.card strong{font-size:13px}.card small{font:10px Arial;color:#c4cfda;line-height:1.3}.cost{font:bold 11px Arial;color:var(--gold)}
 .log{background:#141b23;border:1px solid #46515e;border-radius:9px;padding:9px;min-height:105px;max-height:155px;overflow:auto;font:11px/1.5 Arial;color:#c2cbd2}.log div{border-bottom:1px solid #ffffff0c;padding:2px 0}.log .good{color:#9bd59b}.log .bad{color:#f08d83}
 .tip{font:11px/1.5 Arial;color:var(--muted)}.footer{font:10px Arial;color:#7e8b98;text-align:center;padding:4px}
-.overlay{position:fixed;inset:0;background:#090d13dd;display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{max-width:520px;width:100%;background:linear-gradient(145deg,#303c4b,#1b232d);border:1px solid #8b7958;border-radius:16px;padding:25px;text-align:center;box-shadow:0 20px 80px #000a}.modal h1{font-size:clamp(30px,7vw,48px);color:var(--gold);margin:0 0 6px;letter-spacing:2px}.modal p{font:14px/1.6 Arial;color:#d2d8dc}.modal .primary{margin-top:10px;font-size:16px}.hidden{display:none!important}
+.overlay{position:fixed;inset:0;background:#090d13dd;display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{max-width:520px;width:100%;background:linear-gradient(145deg,#303c4b,#1b232d);border:1px solid #8b7958;border-radius:16px;padding:25px;text-align:center;box-shadow:0 20px 80px #000a}.modal h1{font-size:clamp(30px,7vw,48px);color:var(--gold);margin:0 0 6px;letter-spacing:2px}.modal p{font:14px/1.6 Arial;color:#d2d8dc}.modal .primary{margin-top:10px;font-size:16px}.modal .secondary{margin-top:8px}.save-note{font:11px Arial;color:#a9c7a6;margin-top:10px}.hidden{display:none!important}
 .choice-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.choice{padding:12px 6px;background:#354252;border:1px solid #68798a;border-radius:8px}.choice b{display:block;color:var(--gold);margin-bottom:5px}.choice small{font:10px Arial;color:#c5d0d9}
 @media(max-width:800px){.main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.side .section-title:first-child{grid-column:1/-1}.hand{grid-column:1/-1;grid-row:2}.logbox{grid-column:1/-1}.tipbox{grid-column:1/-1}.arena{padding:9px}.app{padding:8px}.tile{aspect-ratio:1.02}.stats{gap:5px}.stat{min-width:65px;padding:6px}.stat b{font-size:15px}}
 @media(max-width:420px){.brand{font-size:17px}.brand small{font-size:8px}.stat{min-width:56px}.stat span{font-size:8px}.stat b{font-size:13px}.tile .name{font-size:8px}.choice-list{grid-template-columns:1fr}.side{display:flex}}
@@ -65,10 +65,10 @@ button{font:inherit;cursor:pointer;border:0;color:inherit}
       <div class="tipbox"><div class="section-title">Strategist's Notes</div><div class="tip" id="tip">Build farms to grow your treasury. Towers attack enemies from a distance; guards protect the lanes.</div></div>
     </aside>
   </main>
-  <div class="footer">CROWN & CONQUEST · Original browser strategy game · Progress saved on this device</div>
+  <div class="footer">CROWN & CONQUEST · v0.2 · Original browser strategy game · Developed by Joel Kang</div>
 </div>
 <div class="overlay" id="welcome">
- <div class="modal"><h1>CROWN &<br>CONQUEST</h1><p>Raise a kingdom. Shape your strategy. Survive the advancing horde.<br><br>Place buildings and defenders on your 5×5 realm, then end each year to face an enemy assault. Every victory brings a new royal decree.</p><button class="primary" id="begin">Claim Your Crown</button></div>
+ <div class="modal"><h1>CROWN &<br>CONQUEST</h1><p>Raise a kingdom. Shape your strategy. Survive the advancing horde.<br><br>Place buildings and defenders on your 5×5 realm, then end each year to face an enemy assault. Every victory brings a new royal decree.</p><button class="primary" id="begin">Claim Your Crown</button><br><button class="secondary hidden" id="continueRun">Continue Saved Kingdom</button><div class="save-note" id="saveNote">Version 0.2 · Auto-save enabled on this device</div></div>
 </div>
 <div class="overlay hidden" id="reward">
  <div class="modal"><h1>VICTORY</h1><p id="rewardText">The horde has been repelled. Choose one royal decree.</p><div class="choice-list" id="choices"></div></div>
@@ -88,6 +88,9 @@ const defs={
  ballista:{name:"Ballista",icon:"🎯",cost:7,type:"ballista",desc:"Heavy damage to the furthest enemy.",hp:8},
 };
 let state, selected=null, timer=null, busy=false;
+const SAVE_KEY="crown-conquest-save-v2";
+function saveGame(){try{if(!state||state.phase!=="build")return;localStorage.setItem(SAVE_KEY,JSON.stringify({version:2,savedAt:Date.now(),state}));const n=$("saveNote");if(n)n.textContent="Kingdom auto-saved · This device";const c=$("continueRun");if(c)c.classList.remove("hidden")}catch(e){console.warn("Save unavailable",e)}}
+function loadGame(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(data.version!==2||!data.state||!Array.isArray(data.state.board)||data.state.board.length!==25||!Array.isArray(data.state.hand))return false;state=data.state;state.phase="build";selected=null;busy=false;$("welcome").classList.add("hidden");$("reward").classList.add("hidden");$("gameover").classList.add("hidden");$("log").innerHTML="";log("Your saved kingdom has been restored.","good");render();return true}catch(e){console.warn("Could not load save",e);return false}}
 const rand=a=>a[Math.floor(Math.random()*a.length)];
 function fresh(){state={gold:12,hp:20,year:1,score:0,board:Array(25).fill(null),hand:[],enemies:[],nextId:1,phase:"build",wins:0,bonusGold:0,attackBonus:0};state.board[22]={kind:"castle",hp:99,max:99};state.hand=drawHand();log("Your reign begins. Build wisely.","good");render()}
 function drawHand(){let pool=Object.keys(defs);return Array.from({length:4},()=>rand(pool))}
@@ -107,6 +110,7 @@ state.board.forEach((v,i)=>{let cell=document.createElement("button");cell.class
 if(v){let def=v.kind==="castle"?{icon:"🏰",name:"Citadel"}:v.kind==="enemy"?{icon:v.icon||"👹",name:v.name}:defs[v.kind];cell.innerHTML=`<span class="glyph">${def.icon}</span><span class="name">${def.name}</span>${v.level?`<span class="level">Lv.${v.level}</span>`:""}${v.kind!=="castle"?`<span class="hp"><i style="width:${Math.max(0,v.hp/v.max*100)}%"></i></span>`:""}`}
 cell.addEventListener("click",()=>{if(v){if(v.kind!=="castle")log(`${v.name||defs[v.kind]?.name||"Unit"} · ${v.hp}/${v.max} HP`);return}place(i)});b.appendChild(cell)});
 let h=$("hand");h.innerHTML="";state.hand.forEach((k,n)=>{let d=defs[k],c=document.createElement("button");c.className="card"+(selected===k?" chosen":"");c.innerHTML=`<span class="icon">${d.icon}</span><strong>${d.name}</strong><small>${d.desc}</small><span class="cost">✦ ${d.cost} GOLD</span>`;c.onclick=()=>{if(state.phase!=="build")return;selected=selected===k?null:k;render()};h.appendChild(c)});
+if(state.phase==="build")saveGame();
 }
 function spawn(){let col=Math.floor(Math.random()*5),row=0;while(state.board[row*5+col]){col=(col+1)%5;if(col===0){row++;if(row>3)return}}let hp=7+state.year*2;state.board[row*5+col]={kind:"enemy",name:state.year>4?"War Brute":"Raider",icon:state.year>4?"👹":"👺",hp,max:hp,attack:2+Math.floor(state.year/3)}}
 function enemyList(){return state.board.map((v,i)=>v?.kind==="enemy"?{v,i}:null).filter(Boolean)}
@@ -135,6 +139,8 @@ $("choices").innerHTML="";chosen.forEach(o=>{let btn=document.createElement("but
 function endGame(){ $("finalText").textContent=`Your kingdom endured ${state.year} years and earned ${state.score} renown. The realm will remember your reign.`;$("gameover").classList.remove("hidden");log("The citadel has fallen.","bad")}
 function startNew(){if(timer)clearInterval(timer);$("gameover").classList.add("hidden");$("reward").classList.add("hidden");$("welcome").classList.add("hidden");$("log").innerHTML="";selected=null;busy=false;fresh()}
 $("begin").onclick=()=>{$("welcome").classList.add("hidden");fresh()};
+$("continueRun").onclick=()=>{if(!loadGame()){localStorage.removeItem(SAVE_KEY);$("continueRun").classList.add("hidden");$("saveNote").textContent="No valid saved kingdom found."}};
+try{const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(saved?.version===2&&saved.state?.board?.length===25)$("continueRun").classList.remove("hidden")}catch(e){}
 $("endTurn").onclick=combat;$("restart").onclick=()=>{if(confirm("Start a new kingdom? Your current run will end."))startNew()};$("again").onclick=startNew;
 $("board").addEventListener("click",e=>{});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){selected=null;render()}});
