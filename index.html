@@ -95,7 +95,7 @@ let chosenKing="steward";
 function saveGame(){try{if(!state||state.phase!=="build")return;localStorage.setItem(SAVE_KEY,JSON.stringify({version:3,savedAt:Date.now(),state}));const n=$("saveNote");if(n)n.textContent="Kingdom auto-saved · This device";const c=$("continueRun");if(c)c.classList.remove("hidden")}catch(e){console.warn("Save unavailable",e)}}
 function loadGame(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;const data=JSON.parse(raw);if(![2,3].includes(data.version)||!data.state||!Array.isArray(data.state.board)||data.state.board.length!==25||!Array.isArray(data.state.hand))return false;state=data.state;state.king=state.king||"steward";state.phase="build";selected=null;busy=false;$("welcome").classList.add("hidden");$("reward").classList.add("hidden");$("gameover").classList.add("hidden");$("log").innerHTML="";log("Your saved kingdom has been restored.","good");render();return true}catch(e){console.warn("Could not load save",e);return false}}
 const rand=a=>a[Math.floor(Math.random()*a.length)];
-function fresh(kingId=chosenKing){chosenKing=kingId;const ruler=kings[kingId]||kings.steward;state={king:kingId,gold:12+ruler.gold,hp:20+ruler.hp,year:1,score:0,board:Array(25).fill(null),hand:[],enemies:[],nextId:1,phase:"build",wins:0,bonusGold:0,attackBonus:0,bossSpawnedYear:0};state.board[22]={kind:"castle",hp:99,max:99};state.hand=drawHand();log("Your reign begins. Build wisely.","good");render()}
+function fresh(kingId=chosenKing){chosenKing=kingId;const ruler=kings[kingId]||kings.steward;state={king:kingId,gold:12+ruler.gold,hp:20+ruler.hp,maxHp:20+ruler.hp,year:1,score:0,board:Array(25).fill(null),hand:[],enemies:[],nextId:1,phase:"build",wins:0,bonusGold:0,attackBonus:0,bossSpawnedYear:0};state.board[22]={kind:"castle",hp:99,max:99};state.hand=drawHand();log("Your reign begins. Build wisely.","good");render()}
 function drawHand(){let pool=Object.keys(defs);return Array.from({length:4},()=>rand(pool))}
 function log(s,cls=""){let d=document.createElement("div");d.textContent=s;if(cls)d.className=cls;$("log").prepend(d)}
 function addHand(){state.hand=drawHand()}
@@ -129,12 +129,12 @@ if(state.hp<=0){clearInterval(timer);busy=false;endGame();return}
 if(ticks>=8||enemyList().length===0&&ticks>=4){clearInterval(timer);busy=false;finishYear();return}render()
 },650)}
 function finishYear(){state.phase="build";state.year++;state.wins++;let income=state.board.reduce((n,v)=>n+(v?.kind==="farm"?3:0),0)+state.bonusGold;let barracks=state.board.filter(v=>v?.kind==="barracks").length;state.gold+=5+income;for(let n=0;n<barracks;n++){let i=state.board.findIndex((v,i)=>!v&&i<20);if(i>=0)state.board[i]={kind:"guard",hp:12,max:12,level:1};}
-state.hp=Math.min(20,state.hp+1);state.score+=5;addHand();selected=null;log(`Year survived. Treasury +${5+income} gold; +5 renown.`,"good");showRewards();render()}
+state.hp=Math.min(state.maxHp||20,state.hp+1);state.score+=5;addHand();selected=null;log(`Year survived. Treasury +${5+income} gold; +5 renown.`,"good");showRewards();render()}
 function showRewards(){let options=[
 {title:"Royal Treasury",desc:"+8 gold immediately",apply:()=>state.gold+=8},
 {title:"Iron Decree",desc:"All defenders deal +1 damage",apply:()=>state.attackBonus++},
 {title:"Harvest Festival",desc:"Every Granary earns +2 gold",apply:()=>state.bonusGold+=2},
-{title:"Stone Masons",desc:"Restore 6 castle health",apply:()=>state.hp=Math.min(20,state.hp+6)},
+{title:"Stone Masons",desc:"Restore 6 castle health",apply:()=>state.hp=Math.min(state.maxHp||20,state.hp+6)},
 {title:"Master Builders",desc:"Your next building costs 2 less gold",apply:()=>{state.discount=(state.discount||0)+2}},
 {title:"Warrior's Oath",desc:"All guards gain 4 maximum health",apply:()=>state.board.forEach(v=>{if(v?.kind==="guard"){v.max+=4;v.hp+=4}})}
 ];let chosen=[];while(chosen.length<3){let x=rand(options);if(!chosen.includes(x))chosen.push(x)}
