@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#171c25">
+<title>Crown & Conquest</title>
+<style>
+:root{--bg:#171c25;--panel:#222a36;--panel2:#2b3543;--gold:#e7bd68;--cream:#f3e8cb;--muted:#9eacba;--red:#e36e68;--green:#83bd83;--blue:#7eb7d6}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at top,#293545 0,#171c25 65%);color:var(--cream);font-family:Georgia,"Times New Roman",serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+.app{max-width:1200px;margin:auto;padding:14px;min-height:100vh;display:flex;flex-direction:column;gap:12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:#111720;border:1px solid #46515e;border-radius:14px;box-shadow:0 8px 24px #0005}
+.brand{font-size:clamp(20px,3vw,29px);letter-spacing:2px;color:var(--gold);font-weight:bold}.brand small{display:block;font:10px Arial,sans-serif;letter-spacing:3px;color:var(--muted);margin-top:2px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.stat{background:#293340;border:1px solid #46515e;border-radius:9px;padding:7px 11px;min-width:78px;text-align:center}.stat b{display:block;font: bold 17px Arial;color:var(--gold)}.stat span{font:10px Arial;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:12px;flex:1}.arena,.side{background:#202833eF;border:1px solid #46515e;border-radius:14px;padding:13px;box-shadow:0 8px 24px #0004}
+.arena-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.wave-title{font-size:20px;color:var(--gold)}.hint{font:12px Arial;color:var(--muted);text-align:right}
+.board-wrap{background:#131a22;border:2px solid #596574;border-radius:12px;padding:8px;position:relative}
+.board{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;max-width:720px;margin:auto}
+.tile{aspect-ratio:1.16;background:linear-gradient(145deg,#4a624e,#304638);border:1px solid #789071;border-radius:7px;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;transition:.15s;min-width:0}
+.tile:nth-child(5n+1){background:linear-gradient(145deg,#4c604b,#354a3a)}.tile.empty:after{content:"";position:absolute;inset:0;background:radial-gradient(#ffffff12 1px,transparent 1px);background-size:9px 9px;pointer-events:none}
+.tile.selected{outline:3px solid var(--gold);outline-offset:-3px;filter:brightness(1.3)}.tile .glyph{font-size:clamp(22px,4vw,36px);line-height:1.1;filter:drop-shadow(0 3px 2px #0007);z-index:1}.tile .name{font:9px Arial;color:#f7e9c7;text-shadow:0 1px 3px #000;z-index:1}.tile .level{position:absolute;right:4px;top:3px;font:10px Arial;color:#ffe09b;z-index:2}
+.tile.enemy{background:linear-gradient(145deg,#743e40,#49282d);border-color:#b56b63}.tile.enemy .glyph{color:#ffd1bd}.tile.castle{background:linear-gradient(145deg,#8c6a3c,#5e4328);border-color:#d3ad68}
+.tile .hp{position:absolute;bottom:3px;left:10%;width:80%;height:4px;background:#211c1a;border-radius:9px;z-index:3}.tile .hp i{display:block;height:100%;background:#8ed18a;border-radius:9px}
+.lane-label{display:flex;justify-content:space-between;font:10px Arial;color:#9eacba;padding:5px 2px 0;letter-spacing:1px}
+.controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap}.primary{background:linear-gradient(#e9c879,#c18b3f);color:#302315;padding:11px 18px;border-radius:9px;font-weight:bold;box-shadow:0 3px 0 #80582c}.primary:active{transform:translateY(2px);box-shadow:0 1px 0 #80582c}.secondary{background:#354252;border:1px solid #617080;padding:9px 13px;border-radius:8px;color:#f2e6cb}.danger{color:#ffb0a7}
+.side{display:flex;flex-direction:column;gap:11px}.section-title{font-size:16px;color:var(--gold);border-bottom:1px solid #46515e;padding-bottom:7px}.hand{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:linear-gradient(145deg,#39485a,#26313e);border:1px solid #718091;border-radius:9px;padding:9px 7px;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;transition:.15s;position:relative}
+.card:hover{transform:translateY(-2px);border-color:var(--gold)}.card.chosen{outline:3px solid var(--gold);background:linear-gradient(145deg,#66583c,#3b3b36)}.card .icon{font-size:29px}.card strong{font-size:13px}.card small{font:10px Arial;color:#c4cfda;line-height:1.3}.cost{font:bold 11px Arial;color:var(--gold)}
+.log{background:#141b23;border:1px solid #46515e;border-radius:9px;padding:9px;min-height:105px;max-height:155px;overflow:auto;font:11px/1.5 Arial;color:#c2cbd2}.log div{border-bottom:1px solid #ffffff0c;padding:2px 0}.log .good{color:#9bd59b}.log .bad{color:#f08d83}
+.tip{font:11px/1.5 Arial;color:var(--muted)}.footer{font:10px Arial;color:#7e8b98;text-align:center;padding:4px}
+.overlay{position:fixed;inset:0;background:#090d13dd;display:flex;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{max-width:520px;width:100%;background:linear-gradient(145deg,#303c4b,#1b232d);border:1px solid #8b7958;border-radius:16px;padding:25px;text-align:center;box-shadow:0 20px 80px #000a}.modal h1{font-size:clamp(30px,7vw,48px);color:var(--gold);margin:0 0 6px;letter-spacing:2px}.modal p{font:14px/1.6 Arial;color:#d2d8dc}.modal .primary{margin-top:10px;font-size:16px}.hidden{display:none!important}
+.choice-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.choice{padding:12px 6px;background:#354252;border:1px solid #68798a;border-radius:8px}.choice b{display:block;color:var(--gold);margin-bottom:5px}.choice small{font:10px Arial;color:#c5d0d9}
+@media(max-width:800px){.main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.side .section-title:first-child{grid-column:1/-1}.hand{grid-column:1/-1;grid-row:2}.logbox{grid-column:1/-1}.tipbox{grid-column:1/-1}.arena{padding:9px}.app{padding:8px}.tile{aspect-ratio:1.02}.stats{gap:5px}.stat{min-width:65px;padding:6px}.stat b{font-size:15px}}
+@media(max-width:420px){.brand{font-size:17px}.brand small{font-size:8px}.stat{min-width:56px}.stat span{font-size:8px}.stat b{font-size:13px}.tile .name{font-size:8px}.choice-list{grid-template-columns:1fr}.side{display:flex}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">CROWN & CONQUEST<small>A KINGDOM-BUILDING ROGUELITE</small></div>
+    <div class="stats">
+      <div class="stat"><b id="gold">12</b><span>Gold</span></div>
+      <div class="stat"><b id="health">20</b><span>Castle HP</span></div>
+      <div class="stat"><b id="year">1</b><span>Year</span></div>
+      <div class="stat"><b id="score">0</b><span>Renown</span></div>
+    </div>
+  </header>
+  <main class="main">
+    <section class="arena">
+      <div class="arena-head"><div class="wave-title" id="phaseTitle">Your Kingdom</div><div class="hint" id="phaseHint">Choose a card, then select an empty tile.</div></div>
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="Kingdom grid"></div>
+        <div class="lane-label"><span>☠ ENEMY FRONTIER</span><span>YOUR CITADEL ↓</span></div>
+      </div>
+      <div class="controls">
+        <div class="tip" id="selectionHint">Select a card from your hand to build.</div>
+        <div style="display:flex;gap:8px"><button class="secondary" id="endTurn">End Year ↗</button><button class="primary" id="restart">New Run</button></div>
+      </div>
+    </section>
+    <aside class="side">
+      <div class="section-title">Royal Hand</div>
+      <div class="hand" id="hand"></div>
+      <div class="logbox"><div class="section-title">Kingdom Chronicle</div><div class="log" id="log"></div></div>
+      <div class="tipbox"><div class="section-title">Strategist's Notes</div><div class="tip" id="tip">Build farms to grow your treasury. Towers attack enemies from a distance; guards protect the lanes.</div></div>
+    </aside>
+  </main>
+  <div class="footer">CROWN & CONQUEST · Original browser strategy game · Progress saved on this device</div>
+</div>
+<div class="overlay" id="welcome">
+ <div class="modal"><h1>CROWN &<br>CONQUEST</h1><p>Raise a kingdom. Shape your strategy. Survive the advancing horde.<br><br>Place buildings and defenders on your 5×5 realm, then end each year to face an enemy assault. Every victory brings a new royal decree.</p><button class="primary" id="begin">Claim Your Crown</button></div>
+</div>
+<div class="overlay hidden" id="reward">
+ <div class="modal"><h1>VICTORY</h1><p id="rewardText">The horde has been repelled. Choose one royal decree.</p><div class="choice-list" id="choices"></div></div>
+</div>
+<div class="overlay hidden" id="gameover">
+ <div class="modal"><h1>THE CROWN FALLS</h1><p id="finalText">Your kingdom has fallen.</p><button class="primary" id="again">Rise Again</button></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const defs={
+ farm:{name:"Granary",icon:"🌾",cost:3,type:"farm",desc:"Earn +3 gold each year.",hp:5},
+ tower:{name:"Watchtower",icon:"🏹",cost:5,type:"tower",desc:"Shoots the strongest nearby enemy.",hp:9},
+ guard:{name:"Royal Guard",icon:"🛡️",cost:4,type:"guard",desc:"A sturdy defender who strikes enemies in its lane.",hp:12},
+ barracks:{name:"Barracks",icon:"⚔️",cost:6,type:"barracks",desc:"Trains a guard at the start of each year.",hp:10},
+ shrine:{name:"Sun Shrine",icon:"🔆",cost:5,type:"shrine",desc:"Adjacent buildings gain +1 attack.",hp:8},
+ ballista:{name:"Ballista",icon:"🎯",cost:7,type:"ballista",desc:"Heavy damage to the furthest enemy.",hp:8},
+};
+let state, selected=null, timer=null, busy=false;
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+function fresh(){state={gold:12,hp:20,year:1,score:0,board:Array(25).fill(null),hand:[],enemies:[],nextId:1,phase:"build",wins:0,bonusGold:0,attackBonus:0};state.board[22]={kind:"castle",hp:99,max:99};state.hand=drawHand();log("Your reign begins. Build wisely.","good");render()}
+function drawHand(){let pool=Object.keys(defs);return Array.from({length:4},()=>rand(pool))}
+function log(s,cls=""){let d=document.createElement("div");d.textContent=s;if(cls)d.className=cls;$("log").prepend(d)}
+function addHand(){state.hand=drawHand()}
+function adjacent(i){let r=Math.floor(i/5),c=i%5;return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([y,x])=>y>=0&&y<5&&x>=0&&x<5).map(([y,x])=>y*5+x)}
+function aura(i){return adjacent(i).reduce((n,j)=>n+(state.board[j]?.kind==="shrine"?1:0),0)}
+function place(i){if(state.phase!=="build"||selected===null)return;let card=defs[selected];if(state.board[i]){log("That tile is occupied. Choose an empty tile.");return}let actualCost=Math.max(0,card.cost-(state.discount||0));if(state.gold<actualCost){log("Not enough gold for "+card.name+".","bad");return}
+state.gold-=actualCost;state.discount=0;state.board[i]={kind:selected,hp:card.hp,max:card.hp,level:1};log(card.name+" placed on the realm.","good");state.hand.splice(state.hand.indexOf(selected),1);selected=null;render()}
+function render(){ $("gold").textContent=state.gold;$("health").textContent=state.hp;$("year").textContent=state.year;$("score").textContent=state.score;
+$("phaseTitle").textContent=state.phase==="build"?"Year "+state.year+" · Prepare your realm":"Year "+state.year+" · Battle in progress";
+$("phaseHint").textContent=state.phase==="build"?"Choose a card, then select an empty tile.":"Your defenders are fighting automatically.";
+$("endTurn").disabled=state.phase!=="build";$("endTurn").style.opacity=state.phase==="build"?"1":".4";
+$("selectionHint").textContent=selected?`Selected: ${defs[selected].name} · Choose an empty tile`:"Select a card from your hand to build.";
+let b=$("board");b.innerHTML="";
+state.board.forEach((v,i)=>{let cell=document.createElement("button");cell.className="tile "+(v?"":"empty")+(v?.kind==="castle"?" castle":"")+(v?.kind==="enemy"?" enemy":"")+(selected!==null&&!v?" selected":"");cell.dataset.index=i;
+if(v){let def=v.kind==="castle"?{icon:"🏰",name:"Citadel"}:v.kind==="enemy"?{icon:v.icon||"👹",name:v.name}:defs[v.kind];cell.innerHTML=`<span class="glyph">${def.icon}</span><span class="name">${def.name}</span>${v.level?`<span class="level">Lv.${v.level}</span>`:""}${v.kind!=="castle"?`<span class="hp"><i style="width:${Math.max(0,v.hp/v.max*100)}%"></i></span>`:""}`}
+cell.addEventListener("click",()=>{if(v){if(v.kind!=="castle")log(`${v.name||defs[v.kind]?.name||"Unit"} · ${v.hp}/${v.max} HP`);return}place(i)});b.appendChild(cell)});
+let h=$("hand");h.innerHTML="";state.hand.forEach((k,n)=>{let d=defs[k],c=document.createElement("button");c.className="card"+(selected===k?" chosen":"");c.innerHTML=`<span class="icon">${d.icon}</span><strong>${d.name}</strong><small>${d.desc}</small><span class="cost">✦ ${d.cost} GOLD</span>`;c.onclick=()=>{if(state.phase!=="build")return;selected=selected===k?null:k;render()};h.appendChild(c)});
+}
+function spawn(){let col=Math.floor(Math.random()*5),row=0;while(state.board[row*5+col]){col=(col+1)%5;if(col===0){row++;if(row>3)return}}let hp=7+state.year*2;state.board[row*5+col]={kind:"enemy",name:state.year>4?"War Brute":"Raider",icon:state.year>4?"👹":"👺",hp,max:hp,attack:2+Math.floor(state.year/3)}}
+function enemyList(){return state.board.map((v,i)=>v?.kind==="enemy"?{v,i}:null).filter(Boolean)}
+function combat(){if(state.phase!=="build"||busy)return;busy=true;state.phase="battle";render();log("The enemy host approaches!","bad");
+let ticks=0;timer=setInterval(()=>{
+ticks++;
+// defenders attack
+for(let i=0;i<25;i++){let v=state.board[i];if(!v||!["tower","ballista","guard"].includes(v.kind))continue;let targets=enemyList();if(!targets.length)break;let target=targets.sort((a,b)=>Math.abs(Math.floor(a.i/5)-Math.floor(i/5))+Math.abs(a.i%5-i%5)-(Math.abs(Math.floor(b.i/5)-Math.floor(i/5))+Math.abs(b.i%5-i%5)))[0];let dmg=(v.kind==="tower"?4:v.kind==="ballista"?7:3)+v.level+state.attackBonus+aura(i);target.v.hp-=dmg;if(target.v.hp<=0){state.board[target.i]=null;state.score+=2;log("Enemy defeated · +2 renown","good")}}
+if(ticks%2===0)spawn();
+// enemy moves one row toward citadel, attacks blockers
+for(let i=24;i>=0;i--){let e=state.board[i];if(!e||e.kind!=="enemy")continue;let row=Math.floor(i/5),col=i%5;if(row>=4){state.hp-=e.attack;state.board[i]=null;log("The citadel takes "+e.attack+" damage!","bad");continue}let ni=(row+1)*5+col;if(state.board[ni]){let target=state.board[ni];if(target.kind==="castle"){state.hp-=e.attack;state.board[i]=null}else{target.hp-=e.attack;if(target.hp<=0){state.board[ni]=null;log((defs[target.kind]?.name||"Defender")+" has fallen!","bad")}}}else{state.board[ni]=e;state.board[i]=null}}
+if(state.hp<=0){clearInterval(timer);busy=false;endGame();return}
+if(ticks>=8||enemyList().length===0&&ticks>=4){clearInterval(timer);busy=false;finishYear();return}render()
+},650)}
+function finishYear(){state.phase="build";state.year++;state.wins++;let income=state.board.reduce((n,v)=>n+(v?.kind==="farm"?3:0),0)+state.bonusGold;let barracks=state.board.filter(v=>v?.kind==="barracks").length;state.gold+=5+income;for(let n=0;n<barracks;n++){let i=state.board.findIndex((v,i)=>!v&&i<20);if(i>=0)state.board[i]={kind:"guard",hp:12,max:12,level:1};}
+state.hp=Math.min(20,state.hp+1);state.score+=5;addHand();selected=null;log(`Year survived. Treasury +${5+income} gold; +5 renown.`,"good");showRewards();render()}
+function showRewards(){let options=[
+{title:"Royal Treasury",desc:"+8 gold immediately",apply:()=>state.gold+=8},
+{title:"Iron Decree",desc:"All defenders deal +1 damage",apply:()=>state.attackBonus++},
+{title:"Harvest Festival",desc:"Every Granary earns +2 gold",apply:()=>state.bonusGold+=2},
+{title:"Stone Masons",desc:"Restore 6 castle health",apply:()=>state.hp=Math.min(20,state.hp+6)},
+{title:"Master Builders",desc:"Your next building costs 2 less gold",apply:()=>{state.discount=(state.discount||0)+2}},
+{title:"Warrior's Oath",desc:"All guards gain 4 maximum health",apply:()=>state.board.forEach(v=>{if(v?.kind==="guard"){v.max+=4;v.hp+=4}})}
+];let chosen=[];while(chosen.length<3){let x=rand(options);if(!chosen.includes(x))chosen.push(x)}
+$("choices").innerHTML="";chosen.forEach(o=>{let btn=document.createElement("button");btn.className="choice";btn.innerHTML=`<b>${o.title}</b><small>${o.desc}</small>`;btn.onclick=()=>{o.apply();$("reward").classList.add("hidden");log("Royal decree: "+o.title,"good");render()};$("choices").appendChild(btn)});$("rewardText").textContent=`Year ${state.year-1} is won. Choose one decree to strengthen your kingdom.`;$("reward").classList.remove("hidden")}
+function endGame(){ $("finalText").textContent=`Your kingdom endured ${state.year} years and earned ${state.score} renown. The realm will remember your reign.`;$("gameover").classList.remove("hidden");log("The citadel has fallen.","bad")}
+function startNew(){if(timer)clearInterval(timer);$("gameover").classList.add("hidden");$("reward").classList.add("hidden");$("welcome").classList.add("hidden");$("log").innerHTML="";selected=null;busy=false;fresh()}
+$("begin").onclick=()=>{$("welcome").classList.add("hidden");fresh()};
+$("endTurn").onclick=combat;$("restart").onclick=()=>{if(confirm("Start a new kingdom? Your current run will end."))startNew()};$("again").onclick=startNew;
+$("board").addEventListener("click",e=>{});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){selected=null;render()}});
+fresh();
+})();
+</script>
+</body>
+</html>
