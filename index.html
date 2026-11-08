@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#171c25">
-<title>Crown &amp; Conquest · v2.5</title>
+<title>Crown &amp; Conquest · v2.5.1</title>
 <style>
 :root{--bg:#171c25;--panel:#222a36;--panel2:#2b3543;--gold:#e7bd68;--cream:#f3e8cb;--muted:#9eacba;--red:#e36e68;--green:#83bd83;--blue:#7eb7d6}
 *{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at top,#293545 0,#171c25 65%);color:var(--cream);font-family:Georgia,"Times New Roman",serif;min-height:100vh}
@@ -134,6 +134,79 @@ button.secondary{background:linear-gradient(180deg,#52677b,#2a3b4d);border:1px s
 .tile[data-kind="wall"] .glyph{filter:drop-shadow(0 2px 2px #0008)}
 .tile.flying:before{content:"";position:absolute;inset:3px;border:1px dashed #b9e3ff88;border-radius:7px;pointer-events:none}
 
+
+/* v2.5.1 · Compact Command View: keep the battlefield, hand and key town data in view */
+.app{max-width:1180px;padding:9px;gap:8px}
+.topbar{padding:8px 11px;gap:8px}
+.main{grid-template-columns:minmax(0,1fr) 300px;gap:9px}
+.arena,.side{padding:10px}
+.arena-head{margin-bottom:7px}
+.board-wrap{padding:7px}
+.board{gap:4px}
+.tile{aspect-ratio:1.04}
+.controls{margin-top:7px;gap:6px}
+.controls>div{gap:6px!important}
+.controls button{padding:8px 10px;font-size:12px}
+.side{gap:8px}
+.hand{gap:6px}
+.card{min-height:104px;padding:7px 5px;gap:3px}
+.card .icon{width:40px;height:40px}
+.card .icon .sprite-art{width:40px;height:40px}
+.log{min-height:76px;max-height:105px;padding:7px}
+.town-panel{padding:8px 9px;font-size:11px}
+.footer{padding:2px}
+@media(max-width:800px){
+ .app{padding:6px;gap:6px}
+ .topbar{flex-direction:row;align-items:center;padding:7px 8px}
+ .brand{font-size:17px;letter-spacing:1px;white-space:nowrap}
+ .brand small{font-size:7px;letter-spacing:1.5px}
+ .stats{justify-content:flex-end;gap:4px;flex-wrap:nowrap}
+ .stat{min-width:0;flex:1;padding:5px 4px}
+ .stat b{font-size:13px}.stat span{font-size:7px;letter-spacing:.4px}
+ .main{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+ .arena{padding:7px}
+ .arena-head{margin-bottom:5px}.wave-title{font-size:17px}.hint{font-size:10px}
+ .board-wrap{padding:5px}.board{gap:3px;padding:3px}
+ .tile{aspect-ratio:1;min-height:0;border-radius:5px}
+ .tile .glyph{width:clamp(25px,7vw,42px);height:clamp(25px,7vw,42px)}
+ .tile .name{font-size:7px}.tile .level{font-size:8px}
+ .lane-label{font-size:8px;padding-top:3px}
+ .controls{margin-top:6px;justify-content:center}
+ .controls>div{justify-content:center}
+ .controls button{font-size:10px;padding:7px 8px}
+ .side{display:contents}
+ .side>.section-title:first-child{display:none}
+ .hand{grid-column:1;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .card{min-height:78px;padding:5px 3px;gap:2px;border-radius:7px}
+ .card .icon,.card .icon .sprite-art{width:30px;height:30px}
+ .card strong{font-size:10px}.card small{font-size:8px;line-height:1.15}.card .cost{font-size:9px}
+ .logbox{display:none}
+ .tipbox{display:contents}
+ .tipbox>.section-title,.tipbox>.tip{display:none}
+ .town-panel{grid-column:1;padding:6px 8px;font-size:10px;line-height:1.35}
+ .footer{font-size:8px}
+}
+@media(max-width:420px){
+ .brand{font-size:14px}.brand small{font-size:6px}
+ .stat span{font-size:6px}.stat b{font-size:12px}
+ .arena-head .hint{max-width:48%;line-height:1.25}
+ .controls button{padding:6px 7px;font-size:9px}
+ .tile .name{font-size:6px}
+}
+@media(max-height:700px) and (min-width:801px){
+ .app{gap:5px;padding:6px}.topbar{padding:5px 9px}.arena,.side{padding:7px}
+ .tile{aspect-ratio:1.18}.card{min-height:82px}.log{max-height:75px;min-height:55px}
+}
+@media(orientation:landscape) and (max-height:520px){
+ .app{min-height:100vh}.topbar{padding:4px 8px}.brand{font-size:15px}
+ .main{grid-template-columns:minmax(0,1fr) 265px;gap:6px}
+ .arena,.side{padding:6px}.arena-head{margin-bottom:3px}
+ .board-wrap{padding:3px}.board{gap:2px}.tile{aspect-ratio:1.25}
+ .tile .glyph{width:30px;height:30px}.tile .name{font-size:7px}
+ .controls{margin-top:3px}.controls button{padding:5px 7px;font-size:9px}
+ .card{min-height:65px}.card .icon,.card .icon .sprite-art{width:25px;height:25px}
+ .log{max-height:54px;min-height:40px}
+}
 </style>
 </head>
 <body>
@@ -166,10 +239,10 @@ button.secondary{background:linear-gradient(180deg,#52677b,#2a3b4d);border:1px s
       <div class="tipbox"><div class="section-title">Strategist's Notes</div><div class="tip" id="tip">Choose relics and equipment after victories. Kingdom events may offer bargains, treasure, or a new hero.</div><div class="section-title" style="margin-top:12px">Kingdom Life</div><div class="town-panel" id="townPanel">Population 4 · Food 8 · Happiness 70%</div><div class="section-title" style="margin-top:12px">Royal Collection</div><div class="tip" id="collectionPanel">No relic or equipment selected yet.</div></div>
     </aside>
   </main>
-  <div class="footer">CROWN & CONQUEST · v2.5 · kingdom society & army · Developed by Joel Kang</div>
+  <div class="footer">CROWN & CONQUEST · v2.5.1 · compact command view · Developed by Joel Kang</div>
 </div>
 <div class="overlay" id="welcome">
- <div class="modal"><h1>CROWN &<br>CONQUEST</h1><p>Raise a kingdom. Shape your strategy. Survive the advancing horde.<br><br>Place buildings and defenders on your 5×5 realm, then end each year to face an enemy assault. Every victory brings a new royal decree.</p><div class="mode-picker"><b>CHOOSE YOUR GAME MODE</b><div class="mode-grid"><button class="mode-card active" data-mode="campaign"><strong>👑 Campaign</strong><small>Build your kingdom and conquer four regions.</small></button><button class="mode-card" data-mode="siege"><strong>🏰 Siege Survival</strong><small>More frequent, stronger assaults. How long can you hold?</small></button><button class="mode-card" data-mode="boss"><strong>🐉 Boss Challenge</strong><small>Face a regional boss every year.</small></button><button class="mode-card" data-mode="daily"><strong>📜 Daily Trial</strong><small>A rotating rule changes every day.</small></button></div><div class="save-note" id="modeDescription">Classic campaign with branching routes and regional progression.</div></div><button class="primary" id="begin">Claim Your Crown</button><br><button class="secondary hidden" id="continueRun">Continue Saved Kingdom</button><div class="save-note" id="saveNote">Version 2.5 · Kingdom Society</div></div>
+ <div class="modal"><h1>CROWN &<br>CONQUEST</h1><p>Raise a kingdom. Shape your strategy. Survive the advancing horde.<br><br>Place buildings and defenders on your 5×5 realm, then end each year to face an enemy assault. Every victory brings a new royal decree.</p><div class="mode-picker"><b>CHOOSE YOUR GAME MODE</b><div class="mode-grid"><button class="mode-card active" data-mode="campaign"><strong>👑 Campaign</strong><small>Build your kingdom and conquer four regions.</small></button><button class="mode-card" data-mode="siege"><strong>🏰 Siege Survival</strong><small>More frequent, stronger assaults. How long can you hold?</small></button><button class="mode-card" data-mode="boss"><strong>🐉 Boss Challenge</strong><small>Face a regional boss every year.</small></button><button class="mode-card" data-mode="daily"><strong>📜 Daily Trial</strong><small>A rotating rule changes every day.</small></button></div><div class="save-note" id="modeDescription">Classic campaign with branching routes and regional progression.</div></div><button class="primary" id="begin">Claim Your Crown</button><br><button class="secondary hidden" id="continueRun">Continue Saved Kingdom</button><div class="save-note" id="saveNote">Version 2.5.1 · Compact Command View</div></div>
 </div>
 <div class="overlay hidden" id="regionSelect"><div class="modal"><h1>CHOOSE YOUR REALM</h1><p>Each frontier has its own enemy faction and regional warlord. Earn crowns from fallen kingdoms to unlock new lands and permanent royal upgrades.</p><div class="meta-line" id="metaSummary">Legacy Crowns: 0</div><div class="region-grid" id="regionChoices"></div><div class="meta-upgrades"><button class="secondary" id="buyGold">Royal Treasury Upgrade</button><button class="secondary" id="buyHealth">Citadel Upgrade</button></div><p class="save-note" id="upgradeSummary">Permanent upgrades are saved on this device.</p></div></div>
 <div class="overlay hidden" id="kingSelect"><div class="modal"><h1>CHOOSE YOUR KING</h1><p>Each ruler begins with a different advantage. Choose carefully — your choice lasts for the entire run.</p><div class="king-grid" id="kingChoices"></div></div></div>
